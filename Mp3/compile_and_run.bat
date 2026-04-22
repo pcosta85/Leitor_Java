@@ -1,34 +1,19 @@
 @echo off
-setlocal
 
-REM JavaFX SDK path
-set JAVAFX_PATH=C:\javafx-sdk
-set JAVAFX_LIB=%JAVAFX_PATH%\lib
+if not exist bin mkdir bin
 
-REM MySQL JDBC Driver
-set MYSQL_JAR=mysql-connector-j-9.7.0.jar
+echo Compilando...
+javac -d bin --module-path "C:\javafx-sdk\lib" --add-modules javafx.controls,javafx.media ^
+-cp ".;lib\mysql-connector-j-9.7.0.jar" src\*.java
 
-REM Compile
-echo Compiling LeitorMP3 and DatabaseUtil...
-javac --module-path %JAVAFX_LIB% --add-modules javafx.controls,javafx.media -cp "%MYSQL_JAR%" LeitorMP3.java DatabaseUtil.java
-
-REM Check if compilation was successful
-if %ERRORLEVEL% EQU 0 (
-    echo.
-    echo ========================================
-    echo Compilation successful!
-    echo Running application...
-    echo ========================================
-    echo.
-    java --module-path %JAVAFX_LIB% --add-modules javafx.controls,javafx.media -cp ".;%MYSQL_JAR%" LeitorMP3
-) else (
-    echo.
-    echo ========================================
-    echo ERROR: Compilation FAILED!
-    echo ========================================
-    echo Check the errors above.
+if %errorlevel% neq 0 (
+    echo ERRO na compilacao
     pause
+    exit /b
 )
 
-endlocal
+echo Executando...
+java --module-path "C:\javafx-sdk\lib" --add-modules javafx.controls,javafx.media ^
+-cp "bin;lib\mysql-connector-j-9.7.0.jar" LeitorMP3
+
 pause

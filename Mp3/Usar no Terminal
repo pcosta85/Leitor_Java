@@ -1,1 +1,14 @@
-java -cp "C:\javafx-sdk\lib\*;../bin" --module-path C:\javafx-sdk\lib --add-modules javafx.controls,javafx.fxml,javafx.media LeitorMP3
+java --module-path "C:\javafx-sdk\lib" --add-modules javafx.controls,javafx.media -cp ".;mysql-connector-j-9.7.0.jar" LeitorMP3
+
+java --module-path "C:\javafx-sdk\lib" --add-modules javafx.controls,javafx.media -cp "bin;lib\mysql-connector-j-9.7.0.jar" LeitorMP3
+
+
+##limpeza de bin
+Remove-Item bin -Recurse -Force
+mkdir bin
+
+#recompilação
+javac -d bin --module-path "C:\javafx-sdk\lib" --add-modules javafx.controls,javafx.media -cp ".;lib\mysql-connector-j-9.7.0.jar" src\*.java
+
+#usar este novo
+java --module-path "C:\javafx-sdk\lib" --add-modules javafx.controls,javafx.media -cp "bin;lib\mysql-connector-j-9.7.0.jar" LeitorMP3

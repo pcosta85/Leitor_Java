@@ -1,21 +1,16 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "java",
-            "name": "LeitorMP3",
-            "request": "launch",
-            "mainClass": "LeitorMP3",
-            "projectName": "Mp3_8c8c4f93"
-        },
-        {
-            "name": "Launch LeitorMP3",
-            "type": "java",
-            "request": "launch",
-            "mainClass": "LeitorMP3",
-            "projectName": "Leitor_Java",
-            "cwd": "${workspaceFolder}/Mp3",
-            "vmArgs": "--module-path C:\\javafx-sdk\\lib --add-modules javafx.controls,javafx.fxml,javafx.media"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run LeitorMP3",
+      "request": "launch",
+      "mainClass": "LeitorMP3",
+      "vmArgs": "--module-path \"C:\\javafx-sdk\\lib\" --add-modules javafx.controls,javafx.media",
+      "classPaths": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/mysql-connector-j-9.7.0.jar"
+      ]
+    }
+  ]
 }
