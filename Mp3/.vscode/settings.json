@@ -1,5 +1,11 @@
 {
-  "java.project.referencedLibraries": [
-    "C:/javafx-sdk/lib/*.jar"
-  ]
+    "java.project.sourcePaths": ["Mp3"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "C:/javafx-sdk/lib/*.jar"
+    ],
+    "java.import.exclusions": [
+        "**/node_modules/**",
+        "**/.git/**"
+    ]
 }
