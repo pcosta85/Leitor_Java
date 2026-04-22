@@ -1,4 +1,4 @@
 volume=61.44578313253012
 shuffle=false
 repeat=0
-indiceAtual=-1
+indiceAtual=0

@@ -2,9 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "LeitorMP3 - Run",
             "type": "java",
+            "name": "LeitorMP3",
+            "request": "launch",
+            "mainClass": "LeitorMP3",
+            "projectName": "Mp3_8c8c4f93"
+        },
+        {
             "name": "Launch LeitorMP3",
+            "type": "java",
             "request": "launch",
             "mainClass": "LeitorMP3",
             "projectName": "Leitor_Java",

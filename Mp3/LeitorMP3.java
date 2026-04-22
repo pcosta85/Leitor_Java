@@ -56,6 +56,9 @@ public class LeitorMP3 extends Application {
 
     private static final String PLAYLIST_FILE = "playlist.txt";
     private static final String CONFIG_FILE = "config.txt";
+    
+    private int currentUserId = -1;
+    private String currentUsername = null;
 
     private enum RepeatMode {
         NONE("Repeat: OFF"),
@@ -130,6 +133,9 @@ public class LeitorMP3 extends Application {
         configurarSliders();
         configurarPlaylist();
 
+        // Create Menu Bar
+        MenuBar menuBar = createMenuBar(stage);
+
         VBox topo = new VBox(6, lblTitulo, lblEstado);
         topo.setPadding(new Insets(10));
         topo.setStyle("-fx-background-color: #2a2a2a; -fx-background-radius: 10;");
@@ -157,8 +163,11 @@ public class LeitorMP3 extends Application {
         centro.setPadding(new Insets(15));
         centro.setStyle("-fx-background-color: #252525; -fx-background-radius: 10;");
 
-        VBox root = new VBox(15, topo, centro);
-        root.setPadding(new Insets(15));
+        // Modified root layout with MenuBar
+        VBox root = new VBox();
+        root.getChildren().add(menuBar);
+        root.getChildren().add(new VBox(15, topo, centro));
+        root.setPadding(new Insets(0));
         root.setStyle("-fx-background-color: #121212;");
 
         ScrollPane scrollPane = new ScrollPane(root);
@@ -167,6 +176,307 @@ public class LeitorMP3 extends Application {
         Scene scene = new Scene(scrollPane, 750, 600);
         stage.setScene(scene);
         stage.show();
+    }
+
+    private MenuBar createMenuBar(Stage stage) {
+        MenuBar menuBar = new MenuBar();
+        menuBar.setStyle("-fx-background-color: #1a1a1a;");
+        
+        Menu fileMenu = new Menu("File");
+        fileMenu.setStyle("-fx-text-fill: white;");
+        
+        MenuItem loginItem = new MenuItem("Login");
+        loginItem.setOnAction(e -> showLoginDialog());
+        
+        MenuItem registerItem = new MenuItem("Register");
+        registerItem.setOnAction(e -> showRegisterDialog());
+        
+        MenuItem savePlaylistItem = new MenuItem("Save Playlist to Cloud");
+        savePlaylistItem.setOnAction(e -> savePlaylistToCloud());
+        
+        MenuItem loadPlaylistItem = new MenuItem("Load Playlist from Cloud");
+        loadPlaylistItem.setOnAction(e -> loadPlaylistFromCloud());
+        
+        MenuItem logoutItem = new MenuItem("Logout");
+        logoutItem.setOnAction(e -> logout());
+        
+        MenuItem exitItem = new MenuItem("Exit");
+        exitItem.setOnAction(e -> stage.close());
+        
+        fileMenu.getItems().addAll(
+            loginItem,
+            registerItem,
+            new SeparatorMenuItem(),
+            savePlaylistItem,
+            loadPlaylistItem,
+            new SeparatorMenuItem(),
+            logoutItem,
+            new SeparatorMenuItem(),
+            exitItem
+        );
+        
+        menuBar.getMenus().add(fileMenu);
+        return menuBar;
+    }
+
+    private void showLoginDialog() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Login");
+        dialog.setHeaderText("Login to your account");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        grid.setStyle("-fx-control-inner-background: #2a2a2a; -fx-text-fill: white;");
+        
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Username");
+        usernameField.setStyle("-fx-control-inner-background: #3a3a3a; -fx-text-fill: white;");
+        
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Password");
+        passwordField.setStyle("-fx-control-inner-background: #3a3a3a; -fx-text-fill: white;");
+        
+        grid.add(new Label("Username:"), 0, 0);
+        grid.add(usernameField, 1, 0);
+        grid.add(new Label("Password:"), 0, 1);
+        grid.add(passwordField, 1, 1);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                String username = usernameField.getText();
+                String password = passwordField.getText();
+                
+                if (username.isEmpty() || password.isEmpty()) {
+                    mostrarErro("Username and password cannot be empty");
+                    return null;
+                }
+                
+                if (DatabaseUtil.authenticateUser(username, password)) {
+                    currentUsername = username;
+                    currentUserId = DatabaseUtil.getUserId(username);
+                    atualizarEstado("Logged in as: " + username);
+                    mostrarAviso("Login successful!");
+                    return username;
+                } else {
+                    mostrarErro("Invalid credentials");
+                }
+            }
+            return null;
+        });
+        
+        dialog.showAndWait();
+    }
+
+    private void showRegisterDialog() {
+        Dialog<Boolean> dialog = new Dialog<>();
+        dialog.setTitle("Register");
+        dialog.setHeaderText("Create a new account");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        grid.setStyle("-fx-control-inner-background: #2a2a2a; -fx-text-fill: white;");
+        
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Username");
+        usernameField.setStyle("-fx-control-inner-background: #3a3a3a; -fx-text-fill: white;");
+        
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email");
+        emailField.setStyle("-fx-control-inner-background: #3a3a3a; -fx-text-fill: white;");
+        
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Password");
+        passwordField.setStyle("-fx-control-inner-background: #3a3a3a; -fx-text-fill: white;");
+        
+        PasswordField confirmField = new PasswordField();
+        confirmField.setPromptText("Confirm Password");
+        confirmField.setStyle("-fx-control-inner-background: #3a3a3a; -fx-text-fill: white;");
+        
+        grid.add(new Label("Username:"), 0, 0);
+        grid.add(usernameField, 1, 0);
+        grid.add(new Label("Email:"), 0, 1);
+        grid.add(emailField, 1, 1);
+        grid.add(new Label("Password:"), 0, 2);
+        grid.add(passwordField, 1, 2);
+        grid.add(new Label("Confirm:"), 0, 3);
+        grid.add(confirmField, 1, 3);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                String username = usernameField.getText();
+                String email = emailField.getText();
+                String password = passwordField.getText();
+                String confirm = confirmField.getText();
+                
+                if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                    mostrarErro("All fields are required");
+                    return false;
+                }
+                
+                if (!password.equals(confirm)) {
+                    mostrarErro("Passwords do not match");
+                    return false;
+                }
+                
+                if (password.length() < 6) {
+                    mostrarErro("Password must be at least 6 characters");
+                    return false;
+                }
+                
+                if (DatabaseUtil.registerUser(username, email, password)) {
+                    mostrarAviso("Registration successful! You can now login.");
+                    return true;
+                } else {
+                    mostrarErro("Registration failed. Username or email may already exist.");
+                }
+            }
+            return false;
+        });
+        
+        dialog.showAndWait();
+    }
+
+    private void savePlaylistToCloud() {
+        if (currentUserId == -1) {
+            mostrarErro("Please login first to save playlists to the cloud");
+            return;
+        }
+        
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Save Playlist");
+        dialog.setHeaderText("Enter playlist name");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        
+        TextField playlistNameField = new TextField();
+        playlistNameField.setPromptText("Playlist name");
+        
+        grid.add(new Label("Playlist Name:"), 0, 0);
+        grid.add(playlistNameField, 1, 0);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                String playlistName = playlistNameField.getText();
+                if (playlistName.isEmpty()) {
+                    mostrarErro("Playlist name cannot be empty");
+                    return null;
+                }
+                
+                List<String> songs = new ArrayList<>();
+                for (File file : playlist) {
+                    songs.add(file.getAbsolutePath());
+                }
+                
+                if (DatabaseUtil.savePlaylist(currentUserId, playlistName, songs)) {
+                    mostrarAviso("Playlist '" + playlistName + "' saved successfully!");
+                    atualizarEstado("Playlist saved to cloud");
+                    return playlistName;
+                } else {
+                    mostrarErro("Failed to save playlist");
+                }
+            }
+            return null;
+        });
+        
+        dialog.showAndWait();
+    }
+
+    private void loadPlaylistFromCloud() {
+        if (currentUserId == -1) {
+            mostrarErro("Please login first to load playlists from the cloud");
+            return;
+        }
+        
+        List<String> playlistNames = DatabaseUtil.getUserPlaylists(currentUserId);
+        
+        if (playlistNames.isEmpty()) {
+            mostrarAviso("No playlists found in cloud");
+            return;
+        }
+        
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Load Playlist");
+        dialog.setHeaderText("Select a playlist to load");
+        
+        ComboBox<String> playlistCombo = new ComboBox<>();
+        playlistCombo.getItems().addAll(playlistNames);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        
+        grid.add(new Label("Select Playlist:"), 0, 0);
+        grid.add(playlistCombo, 1, 0);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                String selectedPlaylist = playlistCombo.getValue();
+                if (selectedPlaylist == null) {
+                    mostrarErro("Please select a playlist");
+                    return null;
+                }
+                
+                List<String> songs = DatabaseUtil.loadPlaylist(currentUserId, selectedPlaylist);
+                
+                executarComSeguranca(() -> {
+                    playlist.clear();
+                    listViewPlaylist.getItems().clear();
+                    
+                    for (String songPath : songs) {
+                        File file = new File(songPath);
+                        if (file.exists()) {
+                            playlist.add(file);
+                            listViewPlaylist.getItems().add(file.getName());
+                        }
+                    }
+                    
+                    if (!playlist.isEmpty()) {
+                        indiceAtual = 0;
+                        listViewPlaylist.getSelectionModel().select(0);
+                    }
+                    
+                    atualizarEstado("Playlist '" + selectedPlaylist + "' loaded from cloud");
+                    mostrarAviso("Playlist loaded successfully!");
+                });
+                
+                return selectedPlaylist;
+            }
+            return null;
+        });
+        
+        dialog.showAndWait();
+    }
+
+    private void logout() {
+        if (currentUserId == -1) {
+            mostrarAviso("You are not logged in");
+            return;
+        }
+        
+        currentUserId = -1;
+        currentUsername = null;
+        atualizarEstado("Logged out");
+        mostrarAviso("You have been logged out");
     }
 
     private void carregarIcon(Stage stage) {

@@ -1,31 +1,34 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
-set JAVAFX_PATH=C:\javafx-sdk\lib
+REM JavaFX SDK path
+set JAVAFX_PATH=C:\javafx-sdk
+set JAVAFX_LIB=%JAVAFX_PATH%\lib
 
-echo.
-echo ========================================
-echo Compilando LeitorMP3...
-echo ========================================
-echo.
+REM MySQL JDBC Driver
+set MYSQL_JAR=mysql-connector-j-9.7.0.jar
 
-javac -cp "%JAVAFX_PATH%\*;." --module-path %JAVAFX_PATH% --add-modules javafx.controls,javafx.fxml,javafx.media -d ../bin LeitorMP3.java
+REM Compile
+echo Compiling LeitorMP3 and DatabaseUtil...
+javac --module-path %JAVAFX_LIB% --add-modules javafx.controls,javafx.media -cp "%MYSQL_JAR%" LeitorMP3.java DatabaseUtil.java
 
-if errorlevel 1 (
+REM Check if compilation was successful
+if %ERRORLEVEL% EQU 0 (
     echo.
-    echo ERRO: Compilacao falhou!
+    echo ========================================
+    echo Compilation successful!
+    echo Running application...
+    echo ========================================
     echo.
+    java --module-path %JAVAFX_LIB% --add-modules javafx.controls,javafx.media -cp ".;%MYSQL_JAR%" LeitorMP3
+) else (
+    echo.
+    echo ========================================
+    echo ERROR: Compilation FAILED!
+    echo ========================================
+    echo Check the errors above.
     pause
-    exit /b 1
 )
 
-echo.
-echo ========================================
-echo Compilacao bem-sucedida!
-echo Iniciando LeitorMP3...
-echo ========================================
-echo.
-
-java -cp "%JAVAFX_PATH%\*;../bin" --module-path %JAVAFX_PATH% --add-modules javafx.controls,javafx.fxml,javafx.media LeitorMP3
-
+endlocal
 pause
