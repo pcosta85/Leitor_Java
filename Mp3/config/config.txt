@@ -1,4 +1,4 @@
 volume=50.0
 shuffle=false
-repeat=1
+repeat=0
 indiceAtual=0

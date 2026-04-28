@@ -6,10 +6,11 @@
       "name": "Run LeitorMP3",
       "request": "launch",
       "mainClass": "LeitorMP3",
+      "cwd": "${workspaceFolder}",
       "vmArgs": "--module-path \"C:\\javafx-sdk\\lib\" --add-modules javafx.controls,javafx.media",
       "classPaths": [
-        "${workspaceFolder}",
-        "${workspaceFolder}/mysql-connector-j-9.7.0.jar"
+        "${workspaceFolder}\\bin",
+        "${workspaceFolder}\\lib\\mysql-connector-j-9.7.0.jar"
       ]
     }
   ]
